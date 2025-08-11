@@ -3,20 +3,31 @@
 @section('title', 'Data Penerima')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
-         <form action="{{ route('recipients.index') }}" method="GET" class="d-flex">
-        <input type="text" name="search" class="form-control me-2"
-               placeholder="Cari penerima..." value="{{ request('search') }}">
-        <button type="submit" class="btn btn-outline-secondary">
-            <i class="fas fa-search"></i>
-        </button>
-    </form>
-        <a href="{{ route('recipients.import') }}" class="btn btn-primary ms-auto">
-            <i class="fas fa-plus me-2"></i>Import Excel
-        </a>
-        <a href="{{ route('recipients.printAll') }}" class="btn btn-primary ms-auto">
-                <i class="fas fa-download"></i> Download Semua QR (ZIP)
+    <style>
+        /* Styling tombol kecil custom */
+        .btn-sm-custom {
+            padding: 5px 12px; /* padding lebih kecil */
+            font-size: 0.8rem; /* teks lebih kecil */
+            border-radius: 20px; /* rounded */
+        }
+    </style>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <form action="{{ route('recipients.index') }}" method="GET" class="d-flex mb-2 mb-md-0">
+            <input type="text" name="search" class="form-control me-2"
+                   placeholder="Cari penerima..." value="{{ request('search') }}">
+            <button type="submit" class="btn btn-outline-secondary">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+        <div class="d-flex gap-2">
+            <a href="{{ route('recipients.import') }}" class="btn btn-primary btn-sm-custom">
+                <i class="fas fa-plus me-2"></i>Import Excel
             </a>
+            <a href="{{ route('recipients.printAll') }}" class="btn btn-primary btn-sm-custom">
+                <i class="fas fa-download me-1"></i> Download Semua QR (ZIP)
+            </a>
+        </div>
     </div>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -104,7 +115,7 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <form action="{{ route('recipients.destroy', $recipient) }}" method="POST"
-                                            class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                              class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger">
@@ -116,7 +127,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center">Belum ada data penerima</td>
+                                <td colspan="8" class="text-center">Belum ada data penerima</td>
                             </tr>
                         @endforelse
                     </tbody>
