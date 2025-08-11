@@ -7,12 +7,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Barryvdh\DomPDF\Facade\Pdf;
+use ZipArchive;
 
 class RecipientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $recipients = Recipient::paginate(20);
+        $search = $request->input('search');
+
+        $recipients = Recipient::when($search, function ($query, $search) {
+            $query->where('child_name', 'LIKE', "%{$search}%");
+        })
+            ->orderBy('child_name', 'asc')
+            ->paginate(10);
+
         return view('recipients.index', compact('recipients'));
     }
 
@@ -106,6 +114,54 @@ class RecipientController extends Controller
         $pdf = Pdf::loadView('recipients.qr-print', compact('recipient', 'encryptedCode'));
 
         return $pdf->stream('qr-code-' . $recipient->qr_code . '.pdf');
+    }
+
+    public function printAllQrCodes()
+    {
+        $recipients = Recipient::all();
+
+        if ($recipients->isEmpty()) {
+            return back()->with('error', 'Tidak ada data penerima.');
+        }
+
+        // Folder sementara untuk simpan PDF
+        $tempDir = storage_path('app/temp_qr_codes');
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0777, true);
+        }
+
+        $zipFile = storage_path('app/qr_codes_all.zip');
+        $zip = new ZipArchive;
+        if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+
+            foreach ($recipients as $recipient) {
+                $encryptedCode = base64_encode($recipient->qr_code . '|' . $recipient->id);
+
+                // Generate PDF
+                $pdf = Pdf::loadView('recipients.qr-print', compact('recipient', 'encryptedCode'));
+
+                $pdfFileName = 'qr-code-' . $recipient->qr_code . '.pdf';
+                $pdfPath = $tempDir . '/' . $pdfFileName;
+
+                file_put_contents($pdfPath, $pdf->output());
+
+                // Masukkan ke ZIP
+                $zip->addFile($pdfPath, $pdfFileName);
+            }
+
+            $zip->close();
+        } else {
+            return back()->with('error', 'Gagal membuat file ZIP.');
+        }
+
+        // Hapus file PDF sementara
+        foreach (glob($tempDir . '/*.pdf') as $file) {
+            unlink($file);
+        }
+        rmdir($tempDir);
+
+        // Download ZIP
+        return response()->download($zipFile)->deleteFileAfterSend(true);
     }
 
     public function scanQr()

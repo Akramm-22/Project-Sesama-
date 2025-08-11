@@ -4,9 +4,19 @@
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
+         <form action="{{ route('recipients.index') }}" method="GET" class="d-flex">
+        <input type="text" name="search" class="form-control me-2"
+               placeholder="Cari penerima..." value="{{ request('search') }}">
+        <button type="submit" class="btn btn-outline-secondary">
+            <i class="fas fa-search"></i>
+        </button>
+    </form>
         <a href="{{ route('recipients.import') }}" class="btn btn-primary ms-auto">
             <i class="fas fa-plus me-2"></i>Import Excel
         </a>
+        <a href="{{ route('recipients.printAll') }}" class="btn btn-primary ms-auto">
+                <i class="fas fa-download"></i> Download Semua QR (ZIP)
+            </a>
     </div>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -19,7 +29,8 @@
                         <tr>
                             <th>QR Code</th>
                             <th>Nama Anak</th>
-                            <th>Nama Orang Tua</th>
+                            <th>Nama Ayah</th>
+                            <th>Nama Ibu</th>
                             <th>Sekolah</th>
                             <th>Kelas</th>
                             <th>Status</th>
@@ -33,7 +44,8 @@
                                     <span class="badge bg-primary">{{ $recipient->qr_code }}</span>
                                 </td>
                                 <td>{{ $recipient->child_name }}</td>
-                                <td>{{ $recipient->parent_name }}</td>
+                                <td>{{ $recipient->Ayah_name }}</td>
+                                <td>{{ $recipient->Ibu_name }}</td>
                                 <td>{{ $recipient->school_name }}</td>
                                 <td>{{ $recipient->class }}</td>
                                 <style>
