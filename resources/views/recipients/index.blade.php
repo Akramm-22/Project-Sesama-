@@ -91,16 +91,6 @@
                                         <a href="{{ route('recipients.edit', $recipient) }}" class="btn btn-sm btn-warning">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="{{ route('recipients.qr-code', $recipient) }}"
-                                            class="btn btn-sm btn-secondary" target="_blank">
-                                            <i class="fas fa-qrcode"></i>
-                                        </a>
-                                        @if ($recipient->is_distributed)
-                                            <a href="{{ route('recipients.receipt', $recipient) }}"
-                                                class="btn btn-sm btn-success">
-                                                <i class="fas fa-file-pdf"></i>
-                                            </a>
-                                        @endif
                                         <form action="{{ route('recipients.destroy', $recipient) }}" method="POST"
                                             class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                             @csrf
