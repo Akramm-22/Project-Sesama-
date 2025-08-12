@@ -108,12 +108,22 @@ class RecipientController extends Controller
 
     public function printQrCode(Recipient $recipient)
     {
-        $pdf = Pdf::loadView('recipients.qr-print', compact('recipient'))
-            ->setPaper([0, 0, 255, 170], 'portrait');
-        // ukuran dalam point (1 point = 1/72 inch)
+        // Generate PDF kecil dari view yang sama
+        $pdfContent = Pdf::loadView('recipients.qr-print', compact('recipient'))
+            ->setPaper([0, 0, 255, 170], 'portrait') // ukuran custom
+            ->output();
 
-        return $pdf->stream('qr-code-' . $recipient->qr_code . '.pdf');
+        // Convert PDF ke PNG pakai Imagick
+        $imagick = new \Imagick();
+        $imagick->readImageBlob($pdfContent);
+        $imagick->setImageFormat('png');
+
+        // Output PNG langsung seperti stream PDF sebelumnya
+        return response($imagick->getImagesBlob())
+            ->header('Content-Type', 'image/png')
+            ->header('Content-Disposition', 'inline; filename="qr-code-' . $recipient->qr_code . '.png"');
     }
+
 
 
 
