@@ -180,29 +180,75 @@ class RecipientController extends Controller
             return back()->with('error', 'Tidak ada data penerima.');
         }
 
-        // Folder sementara untuk simpan PDF
+        // Folder sementara untuk PNG
         $tempDir = storage_path('app/temp_qr_codes');
         if (!file_exists($tempDir)) {
             mkdir($tempDir, 0777, true);
         }
 
         $zipFile = storage_path('app/qr_codes_all.zip');
-        $zip = new ZipArchive;
-        if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+        $zip = new \ZipArchive;
 
+        if ($zip->open($zipFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
             foreach ($recipients as $recipient) {
-                $encryptedCode = base64_encode($recipient->qr_code . '|' . $recipient->id);
+                // Buat PNG dengan desain yang sama seperti printQrCode()
+                $width = 350;
+                $height = 450;
+                $image = imagecreatetruecolor($width, $height);
 
-                // Generate PDF
-                $pdf = Pdf::loadView('recipients.qr-print', compact('recipient', 'encryptedCode'));
+                // Warna
+                $white = imagecolorallocate($image, 255, 255, 255);
+                $black = imagecolorallocate($image, 0, 0, 0);
+                $blue  = imagecolorallocate($image, 0, 113, 188);
+                $gray  = imagecolorallocate($image, 102, 102, 102);
 
-                $pdfFileName = 'qr-code-' . $recipient->qr_code . '.pdf';
-                $pdfPath = $tempDir . '/' . $pdfFileName;
+                // Background putih
+                imagefilledrectangle($image, 0, 0, $width, $height, $white);
 
-                file_put_contents($pdfPath, $pdf->output());
+                // Border
+                imagerectangle($image, 0, 0, $width - 1, $height - 1, $black);
+
+                // Header
+                imagestring($image, 5, 80, 15, 'BAZMA PERTAMINA', $black);
+                imagestring($image, 3, 80, 35, 'Menebar Kebermanfaatan', $black);
+
+                // QR code sementara
+                $qrTempPath = storage_path('app/temp-qr.png');
+                \QrCode::format('png')->size(150)->generate($recipient->qr_code, $qrTempPath);
+                $qrImg = imagecreatefrompng($qrTempPath);
+                imagecopy($image, $qrImg, 100, 60, 0, 0, 150, 150);
+                imagedestroy($qrImg);
+                unlink($qrTempPath);
+
+                // QR text
+                imagestring($image, 5, 120, 220, $recipient->qr_code, $blue);
+
+                // Info penerima
+                $info = [
+                    'Nama'    => $recipient->child_name,
+                    'Ayah'    => $recipient->Ayah_name,
+                    'Ibu'     => $recipient->Ibu_name,
+                    'Sekolah' => $recipient->school_name,
+                    'Kelas'   => $recipient->class,
+                ];
+                $y = 250;
+                foreach ($info as $label => $value) {
+                    imagestring($image, 3, 20, $y, $label . ':', $black);
+                    imagestring($image, 3, 100, $y, $value, $black);
+                    $y += 18;
+                }
+
+                // Footer
+                imagestring($image, 2, 20, $height - 35, 'Scan QR ini saat penyaluran bantuan', $gray);
+                imagestring($image, 2, 20, $height - 20, 'Program Cilincing - Jakarta Utara', $gray);
+
+                // Simpan PNG ke folder sementara
+                $pngPath = $tempDir . '/qr-code-' . $recipient->qr_code . '.png';
+                imagepng($image, $pngPath);
+                imagedestroy($image);
 
                 // Masukkan ke ZIP
-                $zip->addFile($pdfPath, $pdfFileName);
+                $zip->addFile($pngPath, basename($pngPath));
             }
 
             $zip->close();
@@ -210,8 +256,8 @@ class RecipientController extends Controller
             return back()->with('error', 'Gagal membuat file ZIP.');
         }
 
-        // Hapus file PDF sementara
-        foreach (glob($tempDir . '/*.pdf') as $file) {
+        // Hapus file PNG sementara
+        foreach (glob($tempDir . '/*.png') as $file) {
             unlink($file);
         }
         rmdir($tempDir);
@@ -219,6 +265,7 @@ class RecipientController extends Controller
         // Download ZIP
         return response()->download($zipFile)->deleteFileAfterSend(true);
     }
+
 
     public function scanQr()
     {
