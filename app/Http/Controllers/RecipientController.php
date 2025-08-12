@@ -108,64 +108,67 @@ class RecipientController extends Controller
 
     public function printQrCode(Recipient $recipient)
     {
-        $width = 600;
-        $height = 400;
+        // Canvas
+        $width = 350;
+        $height = 450;
         $image = imagecreatetruecolor($width, $height);
 
         // Warna
         $white = imagecolorallocate($image, 255, 255, 255);
         $black = imagecolorallocate($image, 0, 0, 0);
         $blue  = imagecolorallocate($image, 0, 113, 188);
+        $gray  = imagecolorallocate($image, 102, 102, 102);
 
         // Background putih
         imagefilledrectangle($image, 0, 0, $width, $height, $white);
 
-        // Judul
-        imagestring($image, 5, 200, 10, 'BAZMA PERTAMINA', $black);
-        imagestring($image, 3, 200, 30, 'Menebar Kebermanfaatan', $black);
+        // Border
+        imagerectangle($image, 0, 0, $width - 1, $height - 1, $black);
 
-        // Path sementara untuk QR code
+        // Header
+        imagestring($image, 5, 80, 15, 'BAZMA PERTAMINA', $black);
+        imagestring($image, 3, 80, 35, 'Menebar Kebermanfaatan', $black);
+
+        // QR code
         $qrTempPath = storage_path('app/temp-qr.png');
+        \QrCode::format('png')->size(150)->generate($recipient->qr_code, $qrTempPath);
+        $qrImg = imagecreatefrompng($qrTempPath);
+        imagecopy($image, $qrImg, 100, 60, 0, 0, 150, 150);
+        imagedestroy($qrImg);
+        unlink($qrTempPath);
 
-        // Buat QR code PNG
-        \QrCode::format('png')
-            ->size(150)
-            ->generate($recipient->qr_code, $qrTempPath);
-
-        if (file_exists($qrTempPath)) {
-            $qrImage = imagecreatefrompng($qrTempPath);
-            // Tempel QR ke canvas
-            imagecopy($image, $qrImage, 20, 60, 0, 0, 150, 150);
-            imagedestroy($qrImage);
-            unlink($qrTempPath); // hapus file temp
-        }
-
-        // Kode QR text
-        imagestring($image, 5, 200, 60, $recipient->qr_code, $blue);
+        // QR text
+        imagestring($image, 5, 120, 220, $recipient->qr_code, $blue);
 
         // Info penerima
         $info = [
-            'Nama: ' . $recipient->child_name,
-            'Ayah: ' . $recipient->Ayah_name,
-            'Ibu: ' . $recipient->Ibu_name,
-            'Sekolah: ' . $recipient->school_name,
-            'Kelas: ' . $recipient->class,
+            'Nama'    => $recipient->child_name,
+            'Ayah'    => $recipient->Ayah_name,
+            'Ibu'     => $recipient->Ibu_name,
+            'Sekolah' => $recipient->school_name,
+            'Kelas'   => $recipient->class,
         ];
-        $y = 90;
-        foreach ($info as $line) {
-            imagestring($image, 3, 200, $y, $line, $black);
-            $y += 20;
+        $y = 250;
+        foreach ($info as $label => $value) {
+            imagestring($image, 3, 20, $y, $label . ':', $black);
+            imagestring($image, 3, 100, $y, $value, $black);
+            $y += 18;
         }
 
-        // Output sebagai response Laravel
+        // Footer
+        imagestring($image, 2, 20, $height - 35, 'Scan QR ini saat penyaluran bantuan', $gray);
+        imagestring($image, 2, 20, $height - 20, 'Program Cilincing - Jakarta Utara', $gray);
+
+        // Output PNG untuk auto-download
         return response()->stream(function () use ($image) {
             imagepng($image);
             imagedestroy($image);
         }, 200, [
             'Content-Type' => 'image/png',
-            'Content-Disposition' => 'inline; filename="qr-code.png"',
+            'Content-Disposition' => 'attachment; filename="qr-code.png"',
         ]);
     }
+
 
 
 
