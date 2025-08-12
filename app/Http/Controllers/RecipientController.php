@@ -97,11 +97,10 @@ class RecipientController extends Controller
 
     public function generateQrCode(Recipient $recipient)
     {
-        $encryptedCode = base64_encode($recipient->qr_code . '|' . $recipient->id);
 
         $qrCode = QrCode::size(200)
             ->format('png')
-            ->generate($encryptedCode);
+            ->generate($recipient->qr_code);
 
         return response($qrCode, 200)
             ->header('Content-Type', 'image/png');
@@ -109,9 +108,8 @@ class RecipientController extends Controller
 
     public function printQrCode(Recipient $recipient)
     {
-        $encryptedCode = base64_encode($recipient->qr_code . '|' . $recipient->id);
 
-        $pdf = Pdf::loadView('recipients.qr-print', compact('recipient', 'encryptedCode'));
+        $pdf = Pdf::loadView('recipients.qr-print', compact('recipient'));
 
         return $pdf->stream('qr-code-' . $recipient->qr_code . '.pdf');
     }

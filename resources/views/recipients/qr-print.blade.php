@@ -58,7 +58,8 @@
         <div class="header" style="font-size: 14px;">Bantuan Sosial Pendidikan</div>
 
         <div class="qr-code">
-            <img src="data:image/png;base64,{{ base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(150)->generate($encryptedCode)) }}" alt="QR Code">
+            <img src="data:image/png;base64,{{ base64_encode(QrCode::format('png')->size(150)->generate($recipient->qr_code)) }}" alt="QR Code">
+
         </div>
 
         <div class="qr-text">{{ $recipient->qr_code }}</div>
