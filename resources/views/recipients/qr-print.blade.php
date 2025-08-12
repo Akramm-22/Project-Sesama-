@@ -55,7 +55,7 @@
 <body>
     <div class="qr-container">
         <div class="header">BAZMA PERTAMINA</div>
-        <div class="header" style="font-size: 14px;">Bantuan Sosial Pendidikan</div>
+        <div class="header" style="font-size: 14px;">Menebar Kebermanfaatan</div>
 
         <div class="qr-code">
             <img src="data:image/png;base64,{{ base64_encode(QrCode::format('png')->size(150)->generate($recipient->qr_code)) }}" alt="QR Code">
@@ -71,8 +71,12 @@
                     <td>{{ $recipient->child_name }}</td>
                 </tr>
                 <tr>
-                    <td><strong>Orang Tua:</strong></td>
-                    <td>{{ $recipient->parent_name }}</td>
+                    <td><strong>Orang Ayah:</strong></td>
+                    <td>{{ $recipient->Ayah_name }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Orang Ibu:</strong></td>
+                    <td>{{ $recipient->Ibu_name }}</td>
                 </tr>
                 <tr>
                     <td><strong>Sekolah:</strong></td>
@@ -81,10 +85,6 @@
                 <tr>
                     <td><strong>Kelas:</strong></td>
                     <td>{{ $recipient->class }}</td>
-                </tr>
-                <tr>
-                    <td><strong>Ukuran:</strong></td>
-                    <td>Sepatu {{ $recipient->shoe_size }}, Baju {{ $recipient->shirt_size }}</td>
                 </tr>
             </table>
         </div>

@@ -108,11 +108,15 @@ class RecipientController extends Controller
 
     public function printQrCode(Recipient $recipient)
     {
+        $qrCode = QrCode::format('png')
+            ->size(300)
+            ->generate($recipient->qr_code);
 
-        $pdf = Pdf::loadView('recipients.qr-print', compact('recipient'));
-
-        return $pdf->stream('qr-code-' . $recipient->qr_code . '.pdf');
+        return response($qrCode)
+            ->header('Content-Type', 'image/png')
+            ->header('Content-Disposition', 'attachment; filename="qr-code-' . $recipient->qr_code . '.png"');
     }
+
 
     public function printAllQrCodes()
     {
