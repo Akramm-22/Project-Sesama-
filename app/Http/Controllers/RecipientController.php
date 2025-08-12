@@ -108,17 +108,66 @@ class RecipientController extends Controller
 
     public function printQrCode(Recipient $recipient)
     {
-        $html = view('recipients.qr-print', compact('recipient'))->render();
+        $width = 600;
+        $height = 400;
+        $image = imagecreatetruecolor($width, $height);
 
-        // Pakai Browsershot (Puppeteer) untuk render HTML langsung jadi PNG
-        $path = storage_path('app/public/qr-' . $recipient->qr_code . '.png');
+        // Warna
+        $white = imagecolorallocate($image, 255, 255, 255);
+        $black = imagecolorallocate($image, 0, 0, 0);
+        $blue  = imagecolorallocate($image, 0, 113, 188);
 
-        \Spatie\Browsershot\Browsershot::html($html)
-            ->windowSize(300, 200)
-            ->save($path);
+        // Background putih
+        imagefilledrectangle($image, 0, 0, $width, $height, $white);
 
-        return response()->download($path)->deleteFileAfterSend(true);
+        // Judul
+        imagestring($image, 5, 200, 10, 'BAZMA PERTAMINA', $black);
+        imagestring($image, 3, 200, 30, 'Menebar Kebermanfaatan', $black);
+
+        // Path sementara untuk QR code
+        $qrTempPath = storage_path('app/temp-qr.png');
+
+        // Buat QR code PNG
+        \QrCode::format('png')
+            ->size(150)
+            ->generate($recipient->qr_code, $qrTempPath);
+
+        if (file_exists($qrTempPath)) {
+            $qrImage = imagecreatefrompng($qrTempPath);
+            // Tempel QR ke canvas
+            imagecopy($image, $qrImage, 20, 60, 0, 0, 150, 150);
+            imagedestroy($qrImage);
+            unlink($qrTempPath); // hapus file temp
+        }
+
+        // Kode QR text
+        imagestring($image, 5, 200, 60, $recipient->qr_code, $blue);
+
+        // Info penerima
+        $info = [
+            'Nama: ' . $recipient->child_name,
+            'Ayah: ' . $recipient->Ayah_name,
+            'Ibu: ' . $recipient->Ibu_name,
+            'Sekolah: ' . $recipient->school_name,
+            'Kelas: ' . $recipient->class,
+        ];
+        $y = 90;
+        foreach ($info as $line) {
+            imagestring($image, 3, 200, $y, $line, $black);
+            $y += 20;
+        }
+
+        // Output sebagai response Laravel
+        return response()->stream(function () use ($image) {
+            imagepng($image);
+            imagedestroy($image);
+        }, 200, [
+            'Content-Type' => 'image/png',
+            'Content-Disposition' => 'inline; filename="qr-code.png"',
+        ]);
     }
+
+
 
     public function printAllQrCodes()
     {
