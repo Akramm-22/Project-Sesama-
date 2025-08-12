@@ -93,7 +93,7 @@ Registrasi
 document.getElementById('verifyForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    fetch('{{ route("registration.verify") }}', {
+    fetch('https://berbagi.smktibazma.com/registration/verify', {
         method: 'POST',
         body: new FormData(this)
     })
@@ -121,7 +121,7 @@ document.getElementById('verifyForm').addEventListener('submit', function(e) {
 document.getElementById('editForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    fetch('{{ route("registration.confirm") }}', {
+    fetch('https://berbagi.smktibazma.com/registration/confirm', {
         method: 'POST',
         headers: {
             'X-Requested-With': 'XMLHttpRequest'

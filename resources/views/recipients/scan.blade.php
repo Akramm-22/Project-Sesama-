@@ -97,7 +97,7 @@ $(document).ready(function() {
         $('#resultCard').show();
 
         $.ajax({
-            url: '{{ route("recipients.verify-qr") }}',
+            url: 'https://berbagi.smktibazma.com/recipients/verify-qr',
             method: 'POST',
             data: {
                 qr_code: qrCode,
