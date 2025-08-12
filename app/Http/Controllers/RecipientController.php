@@ -106,20 +106,15 @@ class RecipientController extends Controller
             ->header('Content-Type', 'image/png');
     }
 
-    public function printQrCodeAsPng(Recipient $recipient)
+    public function printQrCode(Recipient $recipient)
     {
         $pdf = Pdf::loadView('recipients.qr-print', compact('recipient'))
-            ->setPaper([0, 0, 255, 170], 'portrait')
-            ->output();
+            ->setPaper([0, 0, 255, 170], 'portrait');
+        // ukuran dalam point (1 point = 1/72 inch)
 
-        $imagick = new \Imagick();
-        $imagick->readImageBlob($pdf);
-        $imagick->setImageFormat('png');
-
-        return response($imagick)
-            ->header('Content-Type', 'image/png')
-            ->header('Content-Disposition', 'attachment; filename="qr-code-' . $recipient->qr_code . '.png"');
+        return $pdf->stream('qr-code-' . $recipient->qr_code . '.pdf');
     }
+
 
 
 
