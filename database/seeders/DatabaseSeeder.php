@@ -17,10 +17,10 @@ class DatabaseSeeder extends Seeder
         // Create admin user
 
         User::create([
-            'name' => 'user',
-            'email' => 'user@bansos.com',
-            'role' => 'user', // default user biasa
-            'password' => Hash::make('user123'),
+            'name' => 'yusuf',
+            'email' => 'yusuf@bansos.com',
+            'role' => 'admin', // default user biasa
+            'password' => Hash::make('yusufganteng'),
         ]);
 
 
