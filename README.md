@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Sistem Informasi Distribusi Bansos Pendidikan
 
 Sistem digital untuk manajemen dan pendistribusian bantuan sosial pendidikan kepada ribuan siswa berbasis web menggunakan Laravel.
@@ -162,3 +163,7 @@ Untuk bantuan teknis atau pertanyaan, hubungi tim development.
 =======
 # Project-Bansos
 >>>>>>> 8b4dbd871c7b7429088a43f85e9145860c3f76d1
+=======
+# Project-Sesama-
+Upgrade dari tampilan sebelumnya 
+>>>>>>> ad5b5ec80d2011aae655581354e74ea19db4f05e
